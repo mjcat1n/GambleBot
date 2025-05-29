@@ -19,7 +19,7 @@ async def flip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Use /start to begin.")
         return
 
-    bet_amount = 10
+    bet_amount = 100
     if user_balances[user_id] < bet_amount:
         await update.message.reply_text("Insufficient funds to flip. You need at least $10.")
         return
@@ -86,7 +86,7 @@ async def guess_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     target = random.randint(1, 100)
     guess_targets[user_id] = target
-    await update.message.reply_text("Guess a number between 1 and 100:")
+    await update.message.reply_text("Guess a number between 1 and 100. If you guess within 20, you win money.")
     return GUESS
 
 # Step 2: Handle the guess
@@ -120,7 +120,7 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-app = ApplicationBuilder().token("api key").build()
+app = ApplicationBuilder().token("api key here").build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("flip", flip))
