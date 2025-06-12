@@ -2,6 +2,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 import random
 
+# Initialize bot
+
 user_balances = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -9,6 +11,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_balances[user_id] = 100
     await update.message.reply_text("Welcome to the gambling bot! You have $100. Try /help for a list of commands")
 
+# Help Command
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Commands:\n/flip\n/roll\n/guess")
 
@@ -19,7 +22,7 @@ async def flip(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Use /start to begin.")
         return
 
-    bet_amount = 100
+    bet_amount = 10
     if user_balances[user_id] < bet_amount:
         await update.message.reply_text("Insufficient funds to flip. You need at least $10.")
         return
@@ -81,12 +84,12 @@ guess_targets = {}  # store each user's random target number
 async def guess_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id not in user_balances:
-        await update.message.reply_text("Use /start to begin.")
+        await update.message.reply_text("Use /start to begin. You can use /cancel at any time to exit out of a game.")
         return ConversationHandler.END
 
     target = random.randint(1, 100)
     guess_targets[user_id] = target
-    await update.message.reply_text("Guess a number between 1 and 100. If you guess within 20, you win money.")
+    await update.message.reply_text("Guess a number between 1 and 100:")
     return GUESS
 
 # Step 2: Handle the guess
@@ -114,13 +117,17 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = f"Too far! The number was {target}. You lose ${bet_amount}."
 
     balance = user_balances[user_id]
+    guess_targets.pop(user_id, None)
     await update.message.reply_text(f"{result} Your new balance: ${balance}")
+    return ConversationHandler.END
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Game cancelled.")
     return ConversationHandler.END
 
 
 
-
-app = ApplicationBuilder().token("api key here").build()
+app = ApplicationBuilder().token("api key").build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("flip", flip))
